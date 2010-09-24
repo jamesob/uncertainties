@@ -7,7 +7,8 @@ import math
 
 class UncertainVariable(object):
     """A class defining a variable with associated uncertainty stored as a
-    physical quantity and a percentage.
+    physical quantity and a percentage. Uncertainties are automatically
+    calculated maintained as an arithmetic calculuation is done.
     
     Values must be set before associated uncertainties are.
 
