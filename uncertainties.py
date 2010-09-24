@@ -21,6 +21,19 @@ class UncertainVariable(object):
     0.057549919541000298
     >>> res.uncertPerc
     1.3236609954071901
+
+    >>> mu = UncertainVariable(0.004, 0.2 / 1000)
+    >>> L  = UncertainVariable(0.6, 0.5 / 100) 
+    >>> res = 4 * mu
+    >>> res2 = L ** 2
+    >>> yores = res * res2
+    >>> foores = 4 * mu * L**2
+    >>> foores.val == yores.val
+    True
+    >>> foores.uncert == yores.uncert
+    True
+    >>> foores.uncertPerc == yores.uncertPerc
+    True
     """
 
     def __init__(self, val=1., uncert=1.):
