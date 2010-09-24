@@ -8,21 +8,17 @@ import math
 class UncertainVariable(object):
     """A class defining a variable with associated uncertainty stored as a
     physical quantity and a percentage. Uncertainties are automatically
-    calculated and maintained as an arithmetic calculuation is done.
+    calculated and maintained as the variable is operated on.
     
     Values must be set before associated uncertainties are.
 
     >>> x = UncertainVariable(44.8, 0.2)
     >>> t = UncertainVariable(3.21, 0.02)
-
     >>> res = x / t**2
-
     >>> res.val
     4.3477838918488754
-
     >>> res.uncert
     0.057549919541000298
-
     >>> res.uncertPerc
     1.3236609954071901
     """
@@ -53,28 +49,26 @@ class UncertainVariable(object):
     def _addAndSub(a, b, op):
         """Not to be used outside of class definition. Encapsulates similarities
         between addition and subtraction."""
-        newVal = UncertainVariable()
-        if isinstance(b, UncertainVariable):
-            newVal.val = op(a.val, b.val)
-            newVal.setUnc(math.sqrt(a.uncert**2 + b.uncert**2))
-        else:
-            newVal.val = op(a.val, b)
-            newVal.setUnc(a.uncert)
 
-        return newVal
+        if isinstance(b, UncertainVariable):
+            a.val = op(a.val, b.val)
+            a.setUnc(math.sqrt(a.uncert**2 + b.uncert**2))
+        else:
+            a.val = op(a.val, b)
+            a.setUnc(a.uncert)
+        return a
 
     def _multAndDiv(a, b, op):
         """Not to be used outside of class definition. Encapsulates similarities
         between mult. and div."""
-        newVal = UncertainVariable()
-        if isinstance(b, UncertainVariable):
-            newVal.val = op(a.val, b.val)
-            newVal.setPerc(math.sqrt(a.uncertPerc**2 + b.uncertPerc**2))
-        else:
-            newVal.val = op(a.val, b)
-            newVal.setUnc(op(a.uncert, b))
 
-        return newVal
+        if isinstance(b, UncertainVariable):
+            a.val = op(a.val, b.val)
+            a.setPerc(math.sqrt(a.uncertPerc**2 + b.uncertPerc**2))
+        else:
+            a.val = op(a.val, b)
+            a.setUnc(op(a.uncert, b))
+        return a
 
     def __add__(self, other):
         """Overloads the + operator for this object."""
@@ -95,8 +89,18 @@ class UncertainVariable(object):
     def __pow__(self, other):
         """Overloads the exponent operator."""
         self.val         = self.val**other
-        self.uncertPerc *= other
+        self.setPerc(self.uncertPerc * other)
+        return self
 
+    def specialFunction(self, fnc):
+        """For special functions, e.g. sin, log, exp."""
+        plusUnc  = self.val + self.unc
+        minUnc   = self.val - self.unc
+        upperVal = fnc(plusUnc) - fnc(self.val)
+        lowerVal = fnc(minUnc) - fnc(self.val)
+
+        self.val    = fnc(self.val)
+        self.uncert = (upperVal + lowerVal) / 2.0
         return self
 
 if __name__ == '__main__':
