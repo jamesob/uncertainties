@@ -50,25 +50,27 @@ class UncertainVariable(object):
         """Not to be used outside of class definition. Encapsulates similarities
         between addition and subtraction."""
 
+        newVar = UncertainVariable()
         if isinstance(b, UncertainVariable):
-            a.val = op(a.val, b.val)
-            a.setUnc(math.sqrt(a.uncert**2 + b.uncert**2))
+            newVar.val = op(a.val, b.val)
+            newVar.setUnc(math.sqrt(a.uncert**2 + b.uncert**2))
         else:
-            a.val = op(a.val, b)
-            a.setUnc(a.uncert)
-        return a
+            newVar.val = op(a.val, b)
+            newVar.setUnc(a.uncert)
+        return newVar
 
     def _multAndDiv(a, b, op):
         """Not to be used outside of class definition. Encapsulates similarities
         between mult. and div."""
 
+        newVar = UncertainVariable()
         if isinstance(b, UncertainVariable):
-            a.val = op(a.val, b.val)
-            a.setPerc(math.sqrt(a.uncertPerc**2 + b.uncertPerc**2))
+            newVar.val = op(a.val, b.val)
+            newVar.setPerc(math.sqrt(a.uncertPerc**2 + b.uncertPerc**2))
         else:
-            a.val = op(a.val, b)
-            a.setUnc(op(a.uncert, b))
-        return a
+            newVar.val = op(a.val, b)
+            newVar.setUnc(op(a.uncert, b))
+        return newVar
 
     def __add__(self, other):
         """Overloads the + operator for this object."""
@@ -88,19 +90,36 @@ class UncertainVariable(object):
 
     def __pow__(self, other):
         """Overloads the exponent operator."""
-        self.val         = self.val**other
-        self.setPerc(self.uncertPerc * other)
-        return self
+        newVar = UncertainVariable()
+        newVar.val = self.val**other
+        newVar.setPerc(self.uncertPerc * other)
+        return newVar
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __rsub__(self, other):
+        return self.__sub__(other)
+
+    def __rdiv__(self, other):
+        return self.__div__(other)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __rpow__(self, other):
+        return self.__pow__(other)
 
     def specialFunction(self, fnc):
         """For special functions, e.g. sin, log, exp."""
+        newVar   = UncertainVariable()
         plusUnc  = self.val + self.unc
         minUnc   = self.val - self.unc
         upperVal = fnc(plusUnc) - fnc(self.val)
         lowerVal = fnc(minUnc) - fnc(self.val)
 
-        self.val    = fnc(self.val)
-        self.uncert = (upperVal + lowerVal) / 2.0
+        newVar.val = fnc(self.val)
+        newVar.setUnc((upperVal + lowerVal) / 2.0)
         return self
 
 if __name__ == '__main__':
